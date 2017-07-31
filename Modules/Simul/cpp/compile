@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+rm -rf build
+mkdir build
+cd build
+cmake ..
+make
+mv pyry3d_cpp.py _pyry3d_cpp.so ..
