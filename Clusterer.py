@@ -8,7 +8,6 @@
 # creates ranked 3D models of macromolecular complexes
 # based on experimental restraints and a whole complex shape.
 
-import sys
 import os
 import glob
 import shutil
@@ -29,7 +28,6 @@ import optparse
 from External_Applications.MinkoFit3D.EMmap import EMmap
 from External_Applications.MinkoFit3D.AtomicStructure import AtomicStructure
 from External_Applications.MinkoFit3D.corcoe import CorCoe
-from External_Applications.MinkoFit3D.ccp4_reader import CCP4
 
 __authors__ = "Joanna M. Kasprzak, Mateusz Dobrychlop"
 __copyright__ = "Copyright 2010, The PyRy3D Project"
@@ -450,36 +448,52 @@ class Cluster_Structure():
         print "corcoe--", self.ccc
 
 
+def determine_pyry3d_score(filename):
+    """
+    Finds a PyRy3D score substring in a PDB file's name.
+    VERY simplified, but works for filenames with score
+    located between underscores.
+
+    Example:
+
+    Input: "acc_d5only_onea360_-375.633_195000_0.000115178.pdb"
+    Output: -375.633
+
+    """
+    pieces = filename.split("_")
+    score = 0.0
+    for piece in pieces:
+        if piece.startswith("-") and "." in piece:
+            score = float(piece)
+    return score
+
+
 def extract_structures(folder, scoretype, representation="fa",
                        density_map=None, map_threshold=None):
     """
-    uses Bio.PDB to extract structure objects from pdb files
+    Uses Bio.PDB to extract structure objects from pdb files
     """
     structures = []
     pdb_files = glob.glob(str(folder)+'/*.pdb')
     if len(pdb_files) == 0:
-        raise PyRy3D_IG_Error("The files you provided are not pdb files")
+        raise PyRy3D_IG_Error("There are no PDB files in provided folder.")
 
     parser = PDBParser(PERMISSIVE=False, QUIET=True)
+
     for pdbfile in pdb_files:
-        print pdbfile, "k"
         ffilename = os.path.split(pdbfile)[1]
-        scorelist = ffilename.split("_")
-        # score = float(scorelist[1])
-        print scorelist
-        score = float(scorelist[3])
+        score = determine_pyry3d_score(ffilename)
         print "asd", score
         structure = parser.get_structure(str(pdbfile), pdbfile)
 
-    # check representation and change it if the need is
-    if representation.lower() == "fa":
-        pass
-    elif representation.lower() == "ca":
-        structure = retrieve_ca_model(structure)
-    elif representation.lower() == "sphere":
-        structure = retrieve_sphere_model(structure)  # , score)
+        # change representation of the model if needed
+        if representation.lower() == "fa":
+            pass
+        elif representation.lower() == "ca":
+            structure = retrieve_ca_model(structure)
+        elif representation.lower() == "sphere":
+            structure = retrieve_sphere_model(structure)
 
-        # score = float(scorelist[2])
         struc = Cluster_Structure(structure, ffilename, pdbfile, score)
         if density_map:
             struc.set_density_map(density_map)
@@ -623,12 +637,6 @@ if __name__ == '__main__':
     PyRy3D model clustering tool - new, cleaner, lighter version
 
     (c) 2017 by Joanna M. Kasprzak and Mateusz Dobrychlop
-
-    usage: python cluster_pyry3d.py folder_with_files type_of_measure
-    folder_with_files - name of folder with pdb files to cluster
-    type_of_molecules - 'RMSD' 'GDT_TS' 'TMScore'
-    threshold - threshold for clustering procedure in Angstroms
-    struct_nr - number of structures to cluster
     """
 
     print doc
@@ -636,50 +644,109 @@ if __name__ == '__main__':
     # Options
     optparser = optparse.OptionParser(usage="%prog [<options>] [-o output] [-i input] [-t threshold] [-s struct_number]")
 
-    optparser.add_option("-i", "--infolder" ,
-                       dest="infolder",
-                       help="folder with files to cluster")
+    optparser.add_option("-i", "--infolder",
+                         dest="infolder",
+                         help="Location containing PDB files to cluster")
 
-    optparser.add_option("-s", "--score_type" ,
-                       dest="score_type",
-                       help="structures can be scored by PyRy3D (-s pyry3d) scoring function or Corelation Coefficient (-s cc)")
+    optparser.add_option("-s", "--score_type",
+                         dest="score_type",
+                         help=(
+                              "Score according to which the files "
+                              "are ranked inside individual clusters. "
+                              "Available options: "
+                              "PyRy3D (-s pyry3d) - requires the PDB files "
+                              "to follow PyRy3D's original naming convention "
+                              "(good for direct PyRy3D output models, where "
+                              "PyRy3D score is included in a file's name); "
+                              "Cross-Correlation Coefficient (-s cc) - "
+                              "requires providing a density map (-d) and "
+                              "its density threshold (-v). If no density map "
+                              "is provided and the scores are not included in "
+                              "the filenames, clustering will succeed, but "
+                              "models in individual clusters will not "
+                              "be ranked in any way. "
+                              )
+                         )
+    optparser.add_option("-d", "--density_map",
+                         dest="density_map",
+                         help=(
+                               "Density map's filename or path. "
+                               "Required if structures in clusters are "
+                               "to be sorted according to CCC "
+                               "(see -s option)."
+                               )
+                         )
+    optparser.add_option("-v", "--density_map_threshold",
+                         dest="dmap_threshold",
+                         help=(
+                               "Map's density threshold (contour level). "
+                               "Required if the density map is provided "
+                               "(see -d option)."
+                               )
+                         )
 
-    optparser.add_option("-d", "--density_map" ,
-                       dest="density_map",
-                       help="filename with density map")
+    optparser.add_option("-t", "--threshold",
+                         dest="threshold",
+                         help=(
+                               "RMSD threshold needed to distinguish separate "
+                               "clusters. Low threshold: smaller clusters, "
+                               "high similarity between models in a single "
+                               "cluster. High threshold: larger clusters, "
+                               "lower similarity in a single cluster. "
+                               "You can provide a fixed RMSD value (-t 5) "
+                               "or set this option to auto (-t auto) to let "
+                               "the script find and suggest an RMSD threshold."
+                               )
+                         )
 
-    optparser.add_option("-v", "--density_map_threshold" ,
-                       dest="dmap_threshold",
-                       help="density map threshold")
+    optparser.add_option("-n", "--struct_nr",
+                         dest="struct_nr",
+                         help=(
+                               "Number of models in output clusters. "
+                               "All input files will be considered during "
+                               "clustering, but only -n models grouped in the "
+                               "biggest clusters will be included in the "
+                               "results."
+                              )
+                         )
 
-    optparser.add_option( "-m", "--measure",
-                       dest="measure",
-                       help="provide measure; select from RMSD, GDT_TS, TMSCORE")
+    optparser.add_option("-x", "--oligomers",
+                         dest="oligos",
+                         help=(
+                               "Set this option to oligos (-x oligos) if your "
+                               "models are oligomers (consist of multiple "
+                               "identical copies of a molecule). The script "
+                               "will compare all possible pairs of components."
+                               )
+                         )
 
-    optparser.add_option("-t", "--threshold", 
-                       dest="threshold",
-                       help="provide threshold value for clustering procedure")
+    optparser.add_option("-r", "--representation",
+                         dest="repr",
+                         help=(
+                               "Representation of structures being compared. "
+                               "Available options: -r fa (all atoms); -r ca "
+                               "(c-alpha backbone); -r sphere (mass centres)."
+                              )
+                         )
 
-    optparser.add_option("-n", "--struct_nr", 
-                       dest="struct_nr",
-                       help="provide number of structures in cluster")
-
-    optparser.add_option("-x", "--oligomers", 
-                       dest="oligos",
-                       help="if complexes are oligomers all possible pairs of components are compared while clustering")
-
-    optparser.add_option("-r", "--representation", 
-                       dest="repr",
-                       help="fa - fullatom; ca - only main chain, sphere - for mass centres")
-
-    optparser.add_option("-o", "--output",  
-                       dest="output",
-                       default="-",
-                       help="output filename, or '-' for stdout (default)")
+    optparser.add_option("-o", "--output",
+                         dest="output",
+                         default="-",
+                         help=(
+                               "A prefix to all output files and folders. "
+                               "Set this option to '-' (-o -) to avoid saving "
+                               "files and set output to stdout."
+                              )
+                         )
 
     optparser.add_option("--sort",
-                        dest = "sort",
-                        help="Clusters with number of elements above given threshold are saved in separate folders")
+                         dest="sort",
+                         help=(
+                               "Set this option to 1 (--sort 1) to group the "
+                               "clustered models into folders corresponding "
+                               "to individual clusters."
+                              )
+                         )
 
     (opts, args) = optparser.parse_args()  # Parse arguments
 
