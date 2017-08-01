@@ -89,6 +89,4 @@ ENV/
 .ropeproject
 
 # p3d
-input/
-temp_pdb/
-PyRy3D/
+test_input/

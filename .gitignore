@@ -90,3 +90,5 @@ ENV/
 
 # p3d
 test_input/
+Modules/
+External_Applications/
