@@ -1,0 +1,70 @@
+Clustered conformers number   1
+acc_d5only_trimmed58_-963.42_194000_1.2327e-06.pdb    score	 -963.42
+Clustered conformers number   1
+acc_d5only_trimmed44_-963.875_189000_1.62381e-07.pdb    score	 -963.875
+Clustered conformers number   1
+acc_d5only_trimmed39_-968.154_140000_7.25066e-06.pdb    score	 -968.154
+Clustered conformers number   1
+acc_d5only_trimmed61_-969.749_59000_0.0151676.pdb    score	 -969.749
+Clustered conformers number   1
+acc_d5only_trimmed56_-972.579_188000_8.14647e-07.pdb    score	 -972.579
+Clustered conformers number   1
+acc_d5only_trimmed51_-974.6461_200000_1.53928442614e-06.pdb    score	 -974.6461
+Clustered conformers number   1
+acc_d5only_trimmed59_-974.722_96000_0.0105696.pdb    score	 -974.722
+Clustered conformers number   1
+acc_d5only_trimmed42_-974.805_194000_4.74337e-08.pdb    score	 -974.805
+Clustered conformers number   1
+acc_d5only_trimmed13_-975.37_199000_1.31421e-06.pdb    score	 -975.37
+Clustered conformers number   1
+acc_d5only_trimmed47_-978.4968_200000_7.61497858548e-06.pdb    score	 -978.4968
+Clustered conformers number   1
+acc_d5only_trimmed46_-978.848_107000_1.79211e-06.pdb    score	 -978.848
+Clustered conformers number   1
+acc_d5only_trimmed49_-982.003_70000_0.0189779.pdb    score	 -982.003
+Clustered conformers number   1
+acc_d5only_trimmed64_-982.031_110000_1.94644e-05.pdb    score	 -982.031
+Clustered conformers number   1
+acc_d5only_trimmed1_-982.114_166000_2.66986e-07.pdb    score	 -982.114
+Clustered conformers number   1
+acc_d5only_trimmed52_-982.39_26000_0.000471152.pdb    score	 -982.39
+Clustered conformers number   1
+acc_d5only_trimmed66_-984.936_68000_0.00882766.pdb    score	 -984.936
+Clustered conformers number   1
+acc_d5only_trimmed36_-985.766_197000_1.13674e-06.pdb    score	 -985.766
+Clustered conformers number   1
+acc_d5only_trimmed43_-985.87_70000_0.0224515.pdb    score	 -985.87
+Clustered conformers number   1
+acc_d5only_trimmed54_-986.137_73000_8.9331e-05.pdb    score	 -986.137
+Clustered conformers number   1
+acc_d5only_trimmed55_-987.144_190000_1.56324e-07.pdb    score	 -987.144
+Clustered conformers number   1
+acc_d5only_trimmed50_-987.232_199000_4.13579e-08.pdb    score	 -987.232
+Clustered conformers number   1
+acc_d5only_trimmed3_-988.107_105000_7.73012e-06.pdb    score	 -988.107
+Clustered conformers number   1
+acc_d5only_trimmed63_-996.03_11000_0.0191649.pdb    score	 -996.03
+Clustered conformers number   1
+acc_d5only_trimmed57_-997.167_25000_0.000459054.pdb    score	 -997.167
+Clustered conformers number   1
+acc_d5only_trimmed53_-997.69_44000_0.000530723.pdb    score	 -997.69
+Clustered conformers number   1
+acc_d5only_trimmed48_-1001.79_12000_0.0110541.pdb    score	 -1001.79
+Clustered conformers number   1
+acc_d5only_trimmed16_-1005.07_38000_0.00398084.pdb    score	 -1005.07
+Clustered conformers number   1
+acc_d5only_trimmed45_-1007.33_193000_2.86804e-06.pdb    score	 -1007.33
+Clustered conformers number   1
+acc_d5only_trimmed60_-1007.42_22000_0.0189399.pdb    score	 -1007.42
+Clustered conformers number   1
+acc_d5only_trimmed62_-1007.65_95000_1.70296e-06.pdb    score	 -1007.65
+Clustered conformers number   1
+acc_d5only_trimmed17_-1019.05_199000_7.9304e-05.pdb    score	 -1019.05
+Clustered conformers number   1
+acc_d5only_trimmed38_-1023.94_14000_0.00104042.pdb    score	 -1023.94
+Clustered conformers number   1
+acc_d5only_trimmed10_-1025.49_35000_0.0059221.pdb    score	 -1025.49
+Clustered conformers number   1
+acc_d5only_trimmed37_-1052.8_22000_0.00189481.pdb    score	 -1052.8
+Clustered conformers number   1
+acc_d5only_trimmed0_-1354.35_1000_605.167.pdb    score	 -1354.35

@@ -34,12 +34,11 @@ __copyright__ = "Copyright 2010, The PyRy3D Project"
 __credits__ = ["Janusz Bujnicki"]
 __license__ = "GPL"
 __version__ = "0.1.5"
-__maintainer__ = "Mateusz Dobrychlop (cleaning up and optimization)"
 __email__ = "mdobrychlop@amu.edu.pl"
 __status__ = "Prototype"
 
 
-class PyRy3D_IG_Error(Exception):
+class Clustering_Error(Exception):
     pass
 
 
@@ -57,7 +56,7 @@ class Cluster():
 
         self.best_scored = []
 
-    def iterate_structures(self, structure_set, dist_type, cutoff,
+    def iterate_structures(self, structure_set, cutoff,
                            struct_nr, score_type, oligo_type):
         """
         calculates scores matrices
@@ -90,8 +89,7 @@ class Cluster():
             for st2 in self.best_scored:  # [index:]:
                 # print "comparing", st1.filename, st2.filename
                 value = self.calculate_distance(
-                                                st1, st2,
-                                                dist_type, oligo_type
+                                                st1, st2, oligo_type
                                                 )
                 self.val_matrix[
                                 self.best_scored.index(st1),
@@ -147,7 +145,7 @@ class Cluster():
                 if score_type == "pyry3d":
                     line = nam.filename +\
                            "    " +\
-                           "score\t" +\
+                           "score\t " +\
                            str(self.best_scored[
                                     self.best_scored.index(nam)
                                                ].score) +\
@@ -155,7 +153,7 @@ class Cluster():
                 else:
                     line = nam.filename +\
                            "  \t" +\
-                           "score" +\
+                           "score " +\
                            str(self.best_scored[
                                     self.best_scored.index(nam)
                                                ].ccc) +\
@@ -167,20 +165,14 @@ class Cluster():
 
         return results, clusters
 
-    def calculate_distance(self, st1, st2, dist_type, option):
+    def calculate_distance(self, st1, st2, option):
         """
-        calculates distanses: RMSD, GDT_TS, TMSCORE
+        calculates RMSD
         """
-
-        if dist_type.upper() == "RMSD":
-            if option == "oligo":
-                return self.calculate_rmsd_oligo(st1, st2)
-            else:
-                return self.calculate_rmsd(st1, st2)
-        elif dist_type.upper() == "GDT_TS":
-            return self.calculate_gdt(st1, st2)
-        elif dist_type.upper() == "TMSCORE":
-            return self.calculate_TMScore(st1, st2)
+        if option == "oligo":
+            return self.calculate_rmsd_oligo(st1, st2)
+        else:
+            return self.calculate_rmsd(st1, st2)
 
     def calculate_rmsd_oligo(self, st1, st2):
         """
@@ -237,7 +229,7 @@ class Cluster():
 
         rmsd = 0.0
         if len(atoms1) != len(atoms2):
-            raise PyRy3D_IG_Error("Compared structures %s %s possess different number of atoms"%(st1.filename, st2.filename))
+            raise Clustering_Error("Compared structures %s %s possess different number of atoms"%(st1.filename, st2.filename))
         rmsd_mat = coords1 - coords2
         rmsd_mat = rmsd_mat**2
         rmsd = sqrt(rmsd_mat.sum()/len(rmsd_mat))
@@ -288,24 +280,6 @@ class Cluster():
         # rmsd = sqrt(rmsd_mat.sum()/len(rmsd_mat))
         return rmsd_mat  # rmsd
 
-    def calculate_TMScore(self, st1, st2):
-        """
-        Returns TM score.
-        by M.Rother
-        """
-        st1_resi_nr = len(list(st1.structure.get_residues()))
-        st2_resi_nr = len(list(st2.structure.get_residues()))
-
-        resi_nr = min(st1_resi_nr, st2_resi_nr)
-
-        if st1_resi_nr < 15 or st2_resi_nr < 15:
-            print 'WARNING: cannot calculate TM score for structures containing less than 15 residues'
-            return None
-        # rmsd_calc = self.calculate_rmsd(st1, st2)
-        rmsd_matrix = self.calculate_residue_rmsd_matrix(st1, st2)
-        d0 = self.calculate_TMScore_normalization_factor(resi_nr)
-        return sum([1.0/(1.0+(dist/d0)**2.0) for dist in rmsd_matrix])/resi_nr
-
     def calculate_residue_rmsd_matrix(self, st1, st2):
         """
         rmsd matrix is created for all pairs of residues
@@ -329,21 +303,6 @@ class Cluster():
         Calculates the factor that reduces the influence of structure length.
         """
         return 1.24 * (float(resi_nr)-15.0)**(1.0/3.0) - 1.8
-
-    def calculate_gdt(self, st1, st2):
-        """
-        Calculates GDT_TS score by counting residues under
-        distances defined in DISTANCES_LIST.
-        by T.Puton
-        """
-
-        resi_rmsd = self.calculate_residue_rmsd_matrix(st1, st2)
-        resi_sum = 0.0
-        for dist in DISTANCES_LIST:
-            resi_sum += self.count_values_under_cutoff(resi_rmsd,  dist)
-        gdt_ts = resi_sum/float(len(DISTANCES_LIST)*len(resi_rmsd))
-        print "GDT_TS", gdt_ts
-        return gdt_ts
 
     def count_values_under_cutoff(self, values_list, cutoff):
         """
@@ -413,7 +372,7 @@ class Cluster():
 
 
 class Cluster_Structure():
-    def __init__(self, struct, filename, path, score=None):
+    def __init__(self, struct, filename, path, score):
         self.structure = struct
         self.filename = filename
         self.full_path = path
@@ -476,7 +435,7 @@ def extract_structures(folder, scoretype, representation="fa",
     structures = []
     pdb_files = glob.glob(str(folder)+'/*.pdb')
     if len(pdb_files) == 0:
-        raise PyRy3D_IG_Error("There are no PDB files in provided folder.")
+        raise Clustering_Error("There are no PDB files in provided folder.")
 
     parser = PDBParser(PERMISSIVE=False, QUIET=True)
 
@@ -499,9 +458,9 @@ def extract_structures(folder, scoretype, representation="fa",
             struc.set_density_map(density_map)
         if scoretype == "ccc":
             struc.calculate_ccc(map_threshold)
-        # print "SCORE", score
+        print "SCORE", score
         if len(list(structure.get_residues())) == 0:
-            raise PyRy3D_IG_Error("The file you provided for structure %s is not a valid pdb file"%(structure.id))
+            raise Clustering_Error("The file you provided for structure %s is not a valid pdb file"%(structure.id))
         structures.append(struc)
         del structure
     return structures
@@ -753,21 +712,25 @@ if __name__ == '__main__':
     # check inputs
     if not opts.struct_nr:
         opts.struct_nr = 0
-    if not opts.measure:
-        opts.measure = "RMSD"
     if not opts.score_type:
         opts.score_type = "pyry3d"
+    opts.score_type = opts.score_type.lower()
+    if opts.threshold is None:
+        raise Clustering_Error("You must provide RMSD threshold (-t option) or"
+                               " set this option to automatic threshold search."
+                               )
 
     structures = extract_structures(
                                     opts.infolder, opts.score_type, opts.repr,
                                     opts.density_map, opts.dmap_threshold
                                    )
-
-    c = Cluster()
     if opts.struct_nr == 0:
         opts.struct_nr = len(structures)
+
+    c = Cluster()
+
     c.iterate_structures(
-                         structures, opts.measure, int(opts.threshold),
+                         structures, int(opts.threshold),
                          int(opts.struct_nr), opts.score_type, opts.oligos
                         )
 
